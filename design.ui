@@ -164,6 +164,8 @@
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
+    <addaction name="actionExport_to_CSV"/>
+    <addaction name="actionImport_from_CSV"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -190,6 +192,25 @@
   <action name="actionSave_as">
    <property name="text">
     <string>Save As...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="actionExport_to_CSV">
+   <property name="text">
+    <string>Export to CSV</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="actionImport_from_CSV">
+   <property name="text">
+    <string>Import from CSV</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
    </property>
   </action>
  </widget>
