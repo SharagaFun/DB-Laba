@@ -116,8 +116,18 @@ class DBApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.saved = True
         self.fname = False
 
-    def showOpenDialog(self, allow=False):
-        if self.saved or allow:
+    def checkAndSave(self, quit_msg):
+        if not self.saved:
+            reply = QMessageBox.question(self, 'Save?',
+                                         quit_msg, QMessageBox.No, QMessageBox.Yes)
+            if reply == QMessageBox.Yes:
+                self.showSaveDialog()
+            else:
+                return True
+        return self.saved
+
+    def showOpenDialog(self):
+        if self.checkAndSave("Do u wanna save changes before opening another file?"):
             fname = QFileDialog.getOpenFileName(self, 'Open file', '', 'json(*.json)')[0]
             if not fname: return
             try:
@@ -128,16 +138,6 @@ class DBApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.setDataToTable(self.db.getFirstRecords())
             self.saved = True
             self.fname = fname
-        else:
-            quit_msg = "Do u wanna save changes before opening another file?"
-            reply = QMessageBox.question(self, 'Save?',
-                                         quit_msg, QMessageBox.No, QMessageBox.Yes)
-
-            if reply == QMessageBox.Yes:
-                self.showSaveDialog()
-                self.showOpenDialog()
-            else:
-                self.showOpenDialog(True)
 
     def showSaveDialog(self, saveas = False):
         if not self.fname or saveas:
@@ -215,19 +215,10 @@ class DBApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.saved = False
 
     def closeEvent(self, event):
-        if not self.saved:
-            quit_msg = "Do u wanna save changes before exiting?"
-            reply = QMessageBox.question(self, 'Save?',
-                                               quit_msg, QMessageBox.No, QMessageBox.Yes)
-
-            if reply == QMessageBox.No:
-                event.accept()
-            else:
-                self.showSaveDialog()
-                if self.saved:
-                    event.accept()
-                else:
-                    event.ignore()
+        if self.checkAndSave("Do u wanna save changes before exiting?"):
+            event.accept()
+        else:
+            event.ignore()
 def main():
     app = QtWidgets.QApplication(sys.argv)
     window = DBApp()
