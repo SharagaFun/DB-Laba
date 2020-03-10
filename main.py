@@ -1,5 +1,6 @@
 import json
 import sys
+import csv
 from PyQt5.QtCore    import *
 from PyQt5.QtGui     import *
 from PyQt5.QtWidgets import *
@@ -42,13 +43,13 @@ class DB:
             res.append(record)
         return res
 
-    def getFirstRecords(self):
+    def getRecords(self, first=True):
         res = list()
         for num, id in enumerate(self.tables):
             record = self.tables[id]
             record.update({'id': id})
             res.append(record)
-            if num > 10:
+            if num > 10 and first:
                 break
         return res
 
@@ -90,6 +91,15 @@ class DB:
         with open(filename, 'w') as outfile:
             json.dump(file, outfile)
 
+    def saveDBToCSV(self, filename):
+        records=self.getRecords(False)
+        columns = ['id', 'name', 'amount', 'price']
+        with open(filename, 'w') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=columns)
+            writer.writeheader()
+            for data in records:
+                writer.writerow(data)
+
     def initDBFromFile(self, filename):
         with open(filename) as json_file:
             file = json.load(json_file, object_hook=lambda d: {int(k) if k.isdigit() else k: v for k, v in d.items()})
@@ -107,12 +117,13 @@ class DBApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.deleteButton.clicked.connect(self.delByName)
         self.actionOpen.triggered.connect(self.showOpenDialog)
         self.actionSave.triggered.connect(self.showSaveDialog)
+        self.tableWidget.itemChanged.connect(self.updateData)
         self.actionSave_as.triggered.connect(lambda: self.showSaveDialog(True))
+        self.actionExport_to_CSV.triggered.connect(self.CSVExport)
         self.columns = ['id', 'name', 'amount', 'price']
         self.tableWidget.setColumnCount(4)
         self.tableWidget.setHorizontalHeaderLabels(self.columns)
-        self.tableWidget.itemChanged.connect(self.updateData)
-        self.setDataToTable(self.db.getFirstRecords())
+        self.setDataToTable(self.db.getRecords())
         self.saved = True
         self.fname = False
 
@@ -135,9 +146,18 @@ class DBApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             except Exception:
                 self.errorMessage("Can't open this file")
                 return
-            self.setDataToTable(self.db.getFirstRecords())
+            self.setDataToTable(self.db.getRecords())
             self.saved = True
             self.fname = fname
+
+
+    def CSVExport(self):
+        fname = QFileDialog.getSaveFileName(self, 'Save file', '', 'csv(*.csv)')[0]
+        if not fname: return
+        try:
+            self.db.saveDBToCSV(fname)
+        except Exception:
+            self.errorMessage("Can't export to this file")
 
     def showSaveDialog(self, saveas = False):
         if not self.fname or saveas:
@@ -196,7 +216,7 @@ class DBApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             except Exception as error:
                 self.errorMessage(str(error))
         self.settingdata = True
-        self.setDataToTable(self.db.getFirstRecords())
+        self.setDataToTable(self.db.getRecords())
         self.settingdata = False
         self.saved = False
 
@@ -213,7 +233,7 @@ class DBApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.db.delRecordsByName(name)
         except Exception as error:
             self.errorMessage(str(error))
-        self.setDataToTable(self.db.getFirstRecords())
+        self.setDataToTable(self.db.getRecords())
         self.saved = False
 
     def closeEvent(self, event):
