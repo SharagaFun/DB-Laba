@@ -100,6 +100,14 @@ class DB:
             for data in records:
                 writer.writerow(data)
 
+    def importDBFromCSV(self, filename):
+        self.tables = dict()
+        self.names = dict()
+        with open(filename, newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                self.addRecord(row)
+
     def initDBFromFile(self, filename):
         with open(filename) as json_file:
             file = json.load(json_file, object_hook=lambda d: {int(k) if k.isdigit() else k: v for k, v in d.items()})
@@ -120,6 +128,7 @@ class DBApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.tableWidget.itemChanged.connect(self.updateData)
         self.actionSave_as.triggered.connect(lambda: self.showSaveDialog(True))
         self.actionExport_to_CSV.triggered.connect(self.CSVExport)
+        self.actionImport_from_CSV.triggered.connect(self.CSVImport)
         self.columns = ['id', 'name', 'amount', 'price']
         self.tableWidget.setColumnCount(4)
         self.tableWidget.setHorizontalHeaderLabels(self.columns)
@@ -158,6 +167,18 @@ class DBApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.db.saveDBToCSV(fname)
         except Exception:
             self.errorMessage("Can't export to this file")
+
+    def CSVImport(self):
+        if self.checkAndSave("Do u wanna save changes before importing file?"):
+            fname = QFileDialog.getOpenFileName(self, 'Open file', '', 'csv(*.csv)')[0]
+            if not fname: return
+            try:
+                self.db.importDBFromCSV(fname)
+            except Exception:
+                self.errorMessage("Can't import this file")
+                return
+            self.setDataToTable(self.db.getRecords())
+            self.fname = False
 
     def showSaveDialog(self, saveas = False):
         if not self.fname or saveas:
