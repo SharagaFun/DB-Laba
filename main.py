@@ -156,7 +156,6 @@ class DBApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         if not self.settingdata:
             try:
                 newdata = self.tabledata[item.row()].copy()
-                print(newdata)
                 id = newdata['id']
                 newdata[self.columns[item.column()]] = item.text()
                 rewritedata = newdata.copy()
@@ -169,7 +168,6 @@ class DBApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.saved = False
 
     def setDataToTable(self, data):
-        print(data)
         self.tabledata = data
         self.settingdata = True
         self.tableWidget.setRowCount(len(data))
@@ -181,7 +179,11 @@ class DBApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
 
     def errorMessage(self, error):
-        print('Error: ' + error)
+        dialog = QMessageBox()
+        dialog.setIcon(QMessageBox.Critical)
+        dialog.setText(error)
+        dialog.addButton(QMessageBox.Ok)
+        dialog.exec()
 
     def addRecord(self):
         id = self.id.text()
