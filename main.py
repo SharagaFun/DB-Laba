@@ -49,7 +49,7 @@ class DB:
             record = self.tables[id]
             record.update({'id': id})
             res.append(record)
-            if num > 10 and first:
+            if num >= 10 and first:
                 break
         return res
 
@@ -216,7 +216,6 @@ class DBApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             for colnum, col in enumerate(self.columns):
                 self.tableWidget.setItem(rownum, colnum, QTableWidgetItem(str(row[col])))
         self.settingdata = False
-        self.saved = False
 
 
     def errorMessage(self, error):
@@ -243,6 +242,9 @@ class DBApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def search(self):
         text = self.nameSD.text()
+        if not text:
+            self.setDataToTable(self.db.getRecords())
+            return
         try:
             self.setDataToTable(self.db.getRecordsByName(text))
         except Exception as error:
