@@ -100,9 +100,12 @@ class DB:
             for data in records:
                 writer.writerow(data)
 
-    def importDBFromCSV(self, filename):
+    def flushDB(self):
         self.tables = dict()
         self.names = dict()
+
+    def importDBFromCSV(self, filename):
+        self.flushDB()
         with open(filename, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
@@ -113,6 +116,7 @@ class DB:
             file = json.load(json_file, object_hook=lambda d: {int(k) if k.isdigit() else k: v for k, v in d.items()})
         self.tables = file[0]
         self.names = file[1]
+
 
 
 class DBApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
