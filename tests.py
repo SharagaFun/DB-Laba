@@ -1,4 +1,4 @@
-from main import DB
+from DB import DB
 import random
 import string
 import time
